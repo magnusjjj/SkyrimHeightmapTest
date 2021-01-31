@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -170,15 +171,13 @@ namespace WindowsFormsApp3
             bitmap.Save(@"C:\debug\tamriel.bmp");
         }
 
-        public float[,] ParseHeights(ReadOnlyMemorySlice<byte> input_in)
+        public float[,] ParseHeights(ReadOnlyMemorySlice<byte> input)
         {
-            byte[] input = input_in.ToArray();
             float[,] returner = new float[32, 32];
-            float offset = BitConverter.ToSingle(input, 0);
-            float row_offset = 0;
+            float offset = BinaryPrimitives.ReadSingleLittleEndian(input);
             for (int r = 0; r < 32; r++)
             {
-                row_offset = 0;
+                var row_offset = 0f;
                 for (int c = 0; c < 32; c++)
                 {
                     sbyte pos = (sbyte)input[r * 32 + c];
