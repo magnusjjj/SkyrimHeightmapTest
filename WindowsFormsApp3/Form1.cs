@@ -162,8 +162,9 @@ namespace WindowsFormsApp3
 
             // When finished, unlock the unmanaged bits
             bitmap.UnlockBits(data);
-
-            pictureBox.Image = bitmap;
+            picture.Width = bitmap.Width;
+            picture.Height = bitmap.Height;
+            picture.Image = bitmap;
             bitmap.Save(@"C:\debug\tamriel.bmp");
         }
 
@@ -180,7 +181,7 @@ namespace WindowsFormsApp3
                 {
                     sbyte pos = (sbyte)input[r * 32 + c];
                     row_offset += pos;
-                    returner[r, 31-c] = offset + row_offset;
+                    returner[r, c] = offset + row_offset;
                 }
             }
             return returner;
