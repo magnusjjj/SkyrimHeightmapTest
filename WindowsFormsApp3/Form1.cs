@@ -20,8 +20,6 @@ namespace WindowsFormsApp3
             InitializeComponent();
             using var mod = SkyrimMod.CreateFromBinaryOverlay(@"C:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition\Data\Skyrim.esm", SkyrimRelease.SkyrimSE);
             var worldspace = mod.Worldspaces.First();
-            txtDebug.Text += worldspace.EditorID;
-            //            txtDebug.Text += "Minheight: " + minheight + " Maxheight: " + maxheight + "\r\n";
             FindMinMax(worldspace);
         }
 
@@ -86,46 +84,12 @@ namespace WindowsFormsApp3
                 //CreateFromBlock(block);
             }*/
             //txtDebug.Text += "Min cell X: " + mincellx + " Max cell X: " + maxcellx + " Min cell y: " + mincelly + " Max cell y: " + maxcelly;
+            //            txtDebug.Text += "Minheight: " + minheight + " Maxheight: " + maxheight + "\r\n";
             CreateFromWorld(worldspace);
             return (minheight, maxheight);
         }
 
-        /*
-
-
-        void CreateFromCell(float[,] indata)
-        {
-            Bitmap bitmap = new Bitmap(32, 32, System.Drawing.Imaging.PixelFormat.Format48bppRgb);
-            byte[] outBuffer = new byte[32 * 32 * 6];
-            for (int y = 0; y < 32; y++)
-            {
-                for (int x = 0; x < 32; x++)
-                {
-                    float percent = (indata[y, x] + 4842) / 9771; // -4842 is the lowest point of the map. 9771 is the total max
-                    ushort color = (ushort)(ushort.MaxValue * percent); 
-                    byte[] snippet = BitConverter.GetBytes(color).Concat(BitConverter.GetBytes(color)).Concat(BitConverter.GetBytes(color)).ToArray();
-                    snippet.CopyTo(outBuffer, (y*32+x)*6);
-                }
-            }
-
-            
-
-            // Lock the unmanaged bits for efficient writing.
-            var data = bitmap.LockBits(
-                new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-                ImageLockMode.ReadWrite,
-                bitmap.PixelFormat);
-
-            // Bulk copy pixel data from a byte array:
-            Marshal.Copy(outBuffer, 0, data.Scan0, outBuffer.Length);
-
-            // When finished, unlock the unmanaged bits
-            bitmap.UnlockBits(data);
-
-            pictureBox.Image = bitmap;
-            bitmap.Save(@"C:\debug\debug.bmp");
-        }
-        */
+        
         void CreateFromWorld(IWorldspaceGetter wrld)
         {
             const int cellsize = 32; // Each cell has 32 x 32 datapoints. Some of those are double, which we don't care about, it will just look more gridlike.
@@ -221,73 +185,5 @@ namespace WindowsFormsApp3
             }
             return returner;
         }
-
-        /*
-        void CreateFromBlock(IWorldspaceBlockGetter block)
-        {
-            const int cellsize = 32;
-            const int subblocksize = cellsize * 8;
-            const int blocksize = subblocksize * 4;
-            const int pixelsize = 6;
-            const int maxheight = 9771;
-            const int minheight = 4842;
-            Bitmap bitmap = new Bitmap(blocksize, blocksize, System.Drawing.Imaging.PixelFormat.Format48bppRgb); // 32 wide, 8 in a subblock, 4 in a block
-            byte[] outBuffer = new byte[blocksize * blocksize * pixelsize];
-
-
-            foreach (var subblock in block.Items)
-            {
-
-                foreach (var subcell in subblock.Items)
-                {
-
-
-                    int normalizedX = 4 - (subcell.Grid.Point.X / block.BlockNumberX);
-                    int normalizedY = 4 - (subcell.Grid.Point.Y / block.BlockNumberY);
-                    int xoffset = (subblocksize * normalizedX) + (subcell.Grid.Point.X * cellsize);
-                    int yoffset = (subblocksize * normalizedY) + (subcell.Grid.Point.Y * cellsize);
-
-                    var land = subcell.Landscape;
-                    float[,] heightmap = ParseHeights((Noggog.ReadOnlyMemorySlice<byte>)land.VertexHeightMap);
-
-
-
-                    for (int y = 0; y < 32; y++)
-                    {
-                        for (int x = 0; x < 32; x++) { 
-                            float percent = (heightmap[32-y, x] + 4842) / 9771; // -4842 is the lowest point of the map. 9771 is the total max
-                            ushort color = (ushort)(ushort.MaxValue * percent);
-                            byte[] snippet = BitConverter.GetBytes(color).Concat(BitConverter.GetBytes(color)).Concat(BitConverter.GetBytes(color)).ToArray();
-                            snippet.CopyTo(outBuffer, (xoffset + (y * cellsize) + x) * pixelsize);
-                        }
-                    }
-                }
-            }
-
-            // Lock the unmanaged bits for efficient writing.
-            var data = bitmap.LockBits(
-                new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-                ImageLockMode.ReadWrite,
-                bitmap.PixelFormat);
-
-            // Bulk copy pixel data from a byte array:
-            Marshal.Copy(outBuffer, 0, data.Scan0, outBuffer.Length);
-
-            // When finished, unlock the unmanaged bits
-            bitmap.UnlockBits(data);
-
-            pictureBox.Image = bitmap;
-            bitmap.Save(@"C:\debug\" + block.BlockNumberX + "," + block.BlockNumberY + ".bmp");
-        }
-
-        static List<T> ToListOf<T>(byte[] array, Func<byte[], int, T> bitConverter)
-        {
-            var size = Marshal.SizeOf(typeof(T));
-            return Enumerable.Range(0, array.Length / size)
-                             .Select(i => bitConverter(array, i * size))
-                             .ToList();
-        }*/
-
-
     }
 }
