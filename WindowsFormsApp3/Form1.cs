@@ -94,7 +94,7 @@ namespace WindowsFormsApp3
         
         void CreateFromWorld(IWorldspaceGetter wrld)
         {
-            const int cellsize = 32; // Each cell has 32 x 32 datapoints. Some of those are double, which we don't care about, it will just look more gridlike.
+            const int cellsize = 33; // Each cell has 33 x 33 datapoints. Some of those are double, which we don't care about, it will just look more gridlike.
             const int maxheight = 9771;  // -4842 is the lowest point of the map. 9771 is the total max
             const int minheight = 4842; // These are just used to calculate the color of each pixel later.
             const int worldwidthincells = 118; // How many cells the world is in X and Y
@@ -114,10 +114,12 @@ namespace WindowsFormsApp3
                         if (cell.Grid == null) continue;
                         int cell_x_normalized = cell.Grid.Point.X + 57; // -57 and -43 are the lowest numbers respectively
                         int cell_y_normalized = cell.Grid.Point.Y + 43;
+
                         if (!cell.Landscape.TryGet(out var land)
-                            || land.VertexHeightMap == null) continue;
+                          || land.VertexHeightMap == null) continue;
                         float[,] heightmap = ParseHeights(land.VertexHeightMap.Value);
-                        for (int y = 0; y < 32; y++)
+                        
+                        for (int y = 0; y < cellsize; y++)
                         {
                             int rowoffsetbytes = (
                                                     (cell_y_normalized * bitmap.Width * cellsize)
@@ -126,7 +128,7 @@ namespace WindowsFormsApp3
                                                  ) * pixelsize; // this is the offset, in bytes, to find the correct row in the buffer
 
 
-                            for (int x = 0; x < 32; x++)
+                            for (int x = 0; x < cellsize; x++)
                             {
                                 // Decide the color of the pixel
                                 float percent = (heightmap[y, x] + minheight) / maxheight;
@@ -166,23 +168,26 @@ namespace WindowsFormsApp3
 
             // When finished, unlock the unmanaged bits
             bitmap.UnlockBits(data);
-
-            pictureBox.Image = bitmap;
+            picture.Width = bitmap.Width;
+            picture.Height = bitmap.Height;s
+            picture.Image = bitmap;
             bitmap.Save(@"C:\debug\tamriel.bmp");
         }
 
         public float[,] ParseHeights(ReadOnlyMemorySlice<byte> input)
         {
-            float[,] returner = new float[32, 32];
+            float[,] returner = new float[33, 33];
             float offset = BinaryPrimitives.ReadSingleLittleEndian(input);
-            for (int r = 0; r < 32; r++)
+            for (int r = 0; r < 33; r++)
             {
                 var row_offset = 0f;
-                for (int c = 0; c < 32; c++)
+                for (int c = 0; c < 33; c++)
+                offset += (sbyte)input[r * 33 + 0 + 4];
+                for (int c = 0; c < 33; c++)
                 {
-                    sbyte pos = (sbyte)input[r * 32 + c];
+                    sbyte pos = (sbyte)input[r * 33 + c + 4];
                     row_offset += pos;
-                    returner[r, 31-c] = offset + row_offset;
+                    returner[r, c] = offset + row_offset;
                 }
             }
             return returner;
