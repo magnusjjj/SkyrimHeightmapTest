@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mutagen.Bethesda.Skyrim;
+using Noggog;
 
 namespace WindowsFormsApp3
 {
@@ -109,10 +111,14 @@ namespace WindowsFormsApp3
                     bool black = false;
                     foreach (var cell in subblock.Items)
                     {
+                        if (cell.Grid == null) continue;
                         int cell_x_normalized = cell.Grid.Point.X + 57; // -57 and -43 are the lowest numbers respectively
                         int cell_y_normalized = cell.Grid.Point.Y + 43;
-                        var land = cell.Landscape;
-                        float[,] heightmap = ParseHeights((Noggog.ReadOnlyMemorySlice<byte>)land.VertexHeightMap);
+
+                        if (!cell.Landscape.TryGet(out var land)
+                          || land.VertexHeightMap == null) continue;
+                        float[,] heightmap = ParseHeights(land.VertexHeightMap.Value);
+                        
                         for (int y = 0; y < cellsize; y++)
                         {
                             int rowoffsetbytes = (
@@ -168,15 +174,14 @@ namespace WindowsFormsApp3
             bitmap.Save(@"C:\debug\tamriel.bmp");
         }
 
-        public float[,] ParseHeights(Noggog.ReadOnlyMemorySlice<byte> input_in)
+        public float[,] ParseHeights(ReadOnlyMemorySlice<byte> input)
         {
-            byte[] input = input_in.ToArray();
             float[,] returner = new float[33, 33];
-            float offset = BitConverter.ToSingle(input, 0);
-            float row_offset = 0;
+            float offset = BinaryPrimitives.ReadSingleLittleEndian(input);
             for (int r = 0; r < 33; r++)
             {
-                row_offset = 0;
+                var row_offset = 0f;
+                for (int c = 0; c < 33; c++)
                 offset += (sbyte)input[r * 33 + 0 + 4];
                 for (int c = 0; c < 33; c++)
                 {
