@@ -111,7 +111,7 @@ namespace WindowsFormsApp3
                     bool black = false;
                     foreach (var cell in subblock.Items)
                     {
-                        if (cell.Grid == null) continue;
+                        //if (cell.Grid == null) continue;
                         int cell_x_normalized = cell.Grid.Point.X + 57; // -57 and -43 are the lowest numbers respectively
                         int cell_y_normalized = cell.Grid.Point.Y + 43;
 
@@ -181,11 +181,10 @@ namespace WindowsFormsApp3
             for (int r = 0; r < 33; r++)
             {
                 var row_offset = 0f;
-                for (int c = 0; c < 33; c++)
                 offset += (sbyte)input[r * 33 + 0 + 4];
                 for (int c = 0; c < 33; c++)
                 {
-                    sbyte pos = (sbyte)input[r * 33 + c + 4];
+                    sbyte pos = (sbyte)input[r * 33 + c];
                     row_offset += pos;
                     returner[r, c] = offset + row_offset;
                 }
