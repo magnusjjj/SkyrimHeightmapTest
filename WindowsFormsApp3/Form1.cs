@@ -169,7 +169,7 @@ namespace WindowsFormsApp3
             // When finished, unlock the unmanaged bits
             bitmap.UnlockBits(data);
             picture.Width = bitmap.Width;
-            picture.Height = bitmap.Height;s
+            picture.Height = bitmap.Height;
             picture.Image = bitmap;
             bitmap.Save(@"C:\debug\tamriel.bmp");
         }
